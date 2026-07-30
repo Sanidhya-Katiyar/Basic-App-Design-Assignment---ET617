@@ -1,0 +1,32 @@
+{
+  "name": "learntrace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A learning application with full clickstream tracking (Moodle-format event logging).",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "node --watch server/index.js",
+    "dev:client": "vite --config client/vite.config.ts",
+    "build": "vite build --config client/vite.config.ts",
+    "seed": "node server/seed.js",
+    "reset": "node server/seed.js --reset",
+    "start": "NODE_ENV=production node server/index.js",
+    "serve": "npm run build && npm run start"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
