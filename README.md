@@ -6,7 +6,7 @@ take is captured as clickstream data** and stored. The captured events use the
 **exact same 7-column shape as a Moodle log export**, and the app can export that
 log as a CSV that lines up column-for-column with a real Moodle report.
 
-Built for the **ET 610 — Learning Analytics & Educational Data Mining** assignment.
+Built for the **ET617 — Educational App Design** assignment.
 
 ---
 

@@ -33,7 +33,7 @@ router.get("/clickstream.csv", requireAuth, (req, res) => {
   recordEvent({
     user_id: req.userId, session_id: req.session.id, component: "Logs",
     event_name: "Report exported", ip: clientIp(req), route: "/analytics",
-    event_context: "Course: ET 610 Learning Analytics",
+    event_context: "Course: ET617 Educational App Design",
   });
 
   res.setHeader("Content-Type", "text/csv; charset=utf-8");

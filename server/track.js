@@ -14,7 +14,7 @@ const insertStmt = db.prepare(`
      @description, @origin, @ip, @route, @target_type, @target_id, @meta, @user_agent, @viewport)
 `);
 
-const COURSE_ID = 610; // display id used in Moodle-style sentences
+const COURSE_ID = 617; // display id used in Moodle-style sentences
 
 // Build a human-readable Moodle-style description if one wasn't provided.
 export function describe(userId, eventName, ctx = {}) {
@@ -90,7 +90,7 @@ export function contextFor(component, ctx = {}) {
       return ctx.title ? `Video: ${ctx.title}` : "Video";
     case "System":
     default:
-      return "Course: ET 610 Learning Analytics";
+      return "Course: ET617 Educational App Design";
   }
 }
 

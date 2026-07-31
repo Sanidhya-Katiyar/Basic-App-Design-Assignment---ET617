@@ -44,7 +44,7 @@ if (!course) {
   const cid = db
     .prepare("INSERT INTO courses(code,title,summary) VALUES(?,?,?)")
     .run(
-      "ET 610",
+      "ET617",
       "Learning Analytics & Educational Data Mining",
       "An introductory course on how learning platforms capture and analyse learner behaviour."
     ).lastInsertRowid;
