@@ -34,9 +34,9 @@ export default function CourseHome() {
   return (
     <>
       <div className="page-head">
-        <div className="eyebrow">{data.course.code}</div>
-        <h1>{data.course.title}</h1>
-        <p>{data.course.summary}</p>
+        <div className="eyebrow">Interactive learning</div>
+        <h1>Understanding Learning Analytics</h1>
+        <p>Work through the lessons, watch the video, and take the quiz — while every action you take is captured as clickstream data. Learn how learning platforms understand learner behaviour by seeing it happen to you.</p>
       </div>
 
       <div className="card">
