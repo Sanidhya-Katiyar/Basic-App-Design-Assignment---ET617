@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LearnTrace — ET617 Presentation</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f8fa; --panel2:#eef1f5; --border:#e2e6ec;
+    --ink:#1a2230; --soft:#55617a; --faint:#8a94a6;
+    --navy:#1e3a8a; --navy-soft:#eef2fb; --navy-line:#c7d3ec;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{ font-family:var(--font); background:#dfe3ea; color:var(--ink); overflow:hidden; }
+
+  /* scale-to-fit: fixed 1280x720 canvas, uniformly scaled to the window */
+  #viewport{ position:fixed; inset:0; display:grid; place-items:center; overflow:hidden; }
+  #deck{ width:1280px; height:720px; position:relative; transform-origin:center center; box-shadow:0 30px 80px rgba(20,30,50,.35); }
+
+  .slide{
+    position:absolute; inset:0; padding:72px 84px; background:var(--bg);
+    display:none; flex-direction:column;
+    border-top:5px solid var(--navy);
+  }
+  .slide.active{ display:flex; }
+
+  .eyebrow{ font-size:14px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--navy); }
+  .rule{ width:52px; height:3px; background:var(--navy); margin:14px 0 22px; }
+  h1{ font-size:52px; letter-spacing:-.03em; line-height:1.06; font-weight:800; }
+  h2{ font-size:38px; letter-spacing:-.025em; font-weight:800; }
+  h3{ font-size:20px; letter-spacing:-.01em; font-weight:700; }
+  p,li{ font-size:20px; line-height:1.55; color:var(--soft); }
+  .lead{ font-size:22px; max-width:920px; }
+  .mono{ font-family:var(--mono); }
+  .ink{ color:var(--ink); } .navy{ color:var(--navy); }
+  .fill{ flex:1; min-height:0; }
+  .center{ justify-content:center; }
+  b{ color:var(--ink); font-weight:700; }
+
+  .brandbar{ display:flex; align-items:center; gap:13px; }
+  .logo{ width:42px; height:42px; border-radius:9px; background:var(--navy); display:grid; place-items:center; color:#fff; font-size:22px; font-weight:700; }
+  .logo.sm{ width:32px; height:32px; font-size:17px; border-radius:7px; }
+  .brandname{ font-size:22px; font-weight:800; letter-spacing:-.02em; }
+
+  ul{ list-style:none; }
+  ul li{ position:relative; padding-left:30px; margin:16px 0; }
+  ul li::before{ content:""; position:absolute; left:2px; top:11px; width:9px; height:9px; background:var(--navy); border-radius:2px; }
+
+  .grid{ display:grid; gap:20px; }
+  .cols-2{ grid-template-columns:1fr 1fr; } .cols-3{ grid-template-columns:repeat(3,1fr); } .cols-4{ grid-template-columns:repeat(4,1fr); }
+  .card{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:24px; }
+  .card .num{ font-family:var(--mono); font-size:14px; font-weight:700; color:var(--navy); letter-spacing:.05em; }
+  .card h3{ margin:8px 0 7px; }
+  .card p{ font-size:16.5px; }
+
+  .chip{ display:inline-block; font-size:15px; font-weight:600; padding:6px 14px; border-radius:6px; background:var(--navy-soft); color:var(--navy); border:1px solid var(--navy-line); margin:5px 7px 0 0; }
+  .chip.plain{ background:var(--panel); color:var(--soft); border-color:var(--border); }
+
+  .stat{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:26px 24px; text-align:left; }
+  .stat .v{ font-size:56px; font-weight:800; letter-spacing:-.03em; line-height:1; color:var(--navy); }
+  .stat .l{ font-size:15px; color:var(--faint); margin-top:10px; font-weight:600; }
+
+  .split{ display:grid; grid-template-columns:1fr 1.1fr; gap:44px; align-items:center; height:100%; }
+  .split.wide-right{ grid-template-columns:.82fr 1.35fr; }
+  .shotwrap{ height:100%; display:flex; align-items:center; }
+  .shot{ width:100%; max-height:100%; object-fit:contain; border-radius:10px; border:1px solid var(--border); box-shadow:0 12px 34px rgba(20,30,50,.16); }
+  .browser{ width:100%; border-radius:10px; overflow:hidden; border:1px solid var(--border); box-shadow:0 12px 34px rgba(20,30,50,.16); }
+  .browser .bar{ background:var(--panel2); padding:9px 13px; display:flex; align-items:center; gap:7px; border-bottom:1px solid var(--border); }
+  .browser .bar i{ width:11px; height:11px; border-radius:50%; background:#cfd5df; display:block; }
+  .browser .bar .u{ margin-left:12px; font-family:var(--mono); font-size:12.5px; color:var(--faint); }
+  .browser img{ width:100%; display:block; }
+
+  .codebox{ background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--navy); border-radius:8px; padding:16px 18px; font-family:var(--mono); font-size:15px; line-height:1.75; color:var(--ink); }
+  .codebox .c{ color:var(--faint); }
+
+  .callout{ background:var(--navy-soft); border:1px solid var(--navy-line); border-radius:10px; padding:18px 22px; }
+  .callout p{ margin:0; font-size:18px; }
+
+  table.csv{ width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px; table-layout:fixed; }
+  table.csv th,table.csv td{ border:1px solid var(--border); padding:8px 9px; text-align:left; color:var(--soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  table.csv th{ background:var(--navy); color:#fff; font-size:11.5px; font-weight:700; border-color:var(--navy); }
+  col.c-time{ width:15%;} col.c-ctx{ width:20%;} col.c-comp{ width:8%;} col.c-name{ width:16%;} col.c-desc{ width:25%;} col.c-org{ width:6%;} col.c-ip{ width:10%;}
+
+  .flow{ display:flex; align-items:stretch; gap:0; }
+  .flow .step{ flex:1; background:var(--panel); border:1px solid var(--border); border-radius:11px; padding:20px 18px; }
+  .flow .step .n{ font-family:var(--mono); font-size:13px; color:var(--navy); font-weight:700; letter-spacing:.06em; }
+  .flow .step h3{ font-size:18px; margin:9px 0 7px; }
+  .flow .step p{ font-size:14.5px; }
+  .flow .arrow{ display:grid; place-items:center; color:var(--navy-line); font-size:24px; width:40px; flex:none; }
+
+  .checkrow{ display:flex; align-items:flex-start; gap:12px; }
+  .checkrow .bx{ flex:none; width:26px; height:26px; border-radius:6px; background:var(--navy); color:#fff; display:grid; place-items:center; font-size:15px; font-weight:700; }
+  .checkrow.todo .bx{ background:var(--panel2); color:var(--navy); border:1px solid var(--navy-line); }
+
+  .foot{ position:absolute; left:84px; right:84px; bottom:30px; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--faint); border-top:1px solid var(--border); padding-top:14px; }
+
+  #bar{ position:fixed; top:0; left:0; height:4px; background:var(--navy); z-index:50; transition:width .3s; }
+  #hint{ position:fixed; bottom:10px; right:14px; font-size:11px; color:#9aa4b4; z-index:50; font-family:var(--mono); }
+
+  @media print{
+    @page{ size:1280px 720px; margin:0; }
+    html,body{ height:auto; overflow:visible; background:#fff; }
+    #viewport{ position:static; display:block; overflow:visible; }
+    #deck{ width:1280px; height:auto; transform:none !important; box-shadow:none; }
+    .slide{ display:flex !important; position:relative; inset:auto; width:1280px; height:720px; break-after:page; page-break-after:always; break-inside:avoid; }
+    .slide:last-child{ break-after:auto; page-break-after:auto; }
+    #bar,#hint{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="viewport">
+<div id="deck">
+
+  <!-- 1 · TITLE -->
+  <section class="slide active center" style="border-top-width:0;">
+    <div class="brandbar" style="margin-bottom:30px;"><div class="logo">◆</div><div class="brandname">LearnTrace</div></div>
+    <div class="eyebrow">ET617 · Educational App Design</div>
+    <h1 style="margin:14px 0 18px;">A learning app that<br>records how you learn</h1>
+    <p class="lead">An interactive learning application that captures <b>every learner action</b> — clicks, page views, video actions, and quiz attempts — and stores it as Moodle-format clickstream data.</p>
+    <div style="margin-top:32px;">
+      <span class="chip">Text · Video · Quiz</span>
+      <span class="chip">Clickstream tracking</span>
+      <span class="chip">CSV export</span>
+      <span class="chip">Analytics dashboard</span>
+    </div>
+    <div class="foot"><span>Sanidhya Katiyar · 23B2244</span><span class="mono">github.com/Sanidhya-Katiyar/Basic-App-Design-Assignment---ET617</span></div>
+  </section>
+
+  <!-- 2 · THE BRIEF -->
+  <section class="slide">
+    <div class="eyebrow">The assignment</div><div class="rule"></div>
+    <h2>What we were asked to build</h2>
+    <div class="split fill" style="margin-top:20px;">
+      <div>
+        <ul>
+          <li>A <b>learning application</b> where users log in as <b>learners</b></li>
+          <li>Offering <b>interactive content</b> — text, video, quizzes</li>
+          <li>Track <b>all user activity</b>: clicks, page views, video actions, quiz attempts</li>
+          <li><b>Store</b> that clickstream data</li>
+          <li>A standalone <b>web app</b>, any tech stack, using <b>git</b></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="num">THE REFERENCE</div>
+        <h3 style="margin-top:6px;">A real Moodle log export</h3>
+        <p>The brief pointed to a Moodle clickstream export as the data model — a seven-column activity log.</p>
+        <div class="codebox" style="margin-top:14px;font-size:13.5px;">Time · Event context · Component ·<br>Event name · Description · Origin · IP</div>
+        <p style="margin-top:14px;font-size:16px;">We made this format the core of the app: LearnTrace emits and exports events in exactly this shape.</p>
+      </div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>The brief</span></div>
+  </section>
+
+  <!-- 3 · WHAT WE BUILT -->
+  <section class="slide">
+    <div class="eyebrow">Overview</div><div class="rule"></div>
+    <h2>What LearnTrace does</h2>
+    <div class="grid cols-3 fill" style="align-content:center;">
+      <div class="card"><div class="num">01</div><h3>Learner login</h3><p>Session-cookie auth over scrypt-hashed passwords, with multiple demo learners.</p></div>
+      <div class="card"><div class="num">02</div><h3>Interactive content</h3><p>A text lesson, a tracked video, an external resource, and a graded quiz.</p></div>
+      <div class="card"><div class="num">03</div><h3>Full activity tracking</h3><p>Clicks, page views, video play/pause/seek/progress, and the quiz lifecycle.</p></div>
+      <div class="card"><div class="num">04</div><h3>Clickstream storage</h3><p>Every action becomes one row in a SQLite <span class="mono">events</span> table.</p></div>
+      <div class="card"><div class="num">05</div><h3>Analytics dashboard</h3><p>Live totals, charts, quiz performance, and an activity feed.</p></div>
+      <div class="card"><div class="num">06</div><h3>Moodle-format export</h3><p>Download the log as a CSV matching the exact seven Moodle columns.</p></div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Feature overview</span></div>
+  </section>
+
+  <!-- 4 · TECH STACK -->
+  <section class="slide">
+    <div class="eyebrow">Under the hood</div><div class="rule"></div>
+    <h2>Tech stack</h2>
+    <div class="grid cols-2 fill" style="align-content:center;">
+      <div class="card"><div class="num">FRONTEND</div><h3>React · TypeScript · Vite</h3><p>A single-page app with client-side routing and a hand-built CSS design system.</p></div>
+      <div class="card"><div class="num">BACKEND</div><h3>Node.js · Express</h3><p>REST API for auth, content, quiz grading, event ingestion, analytics, and export.</p></div>
+      <div class="card"><div class="num">DATABASE</div><h3>SQLite · node:sqlite</h3><p>Node's built-in driver — zero native builds, a single file, fully local.</p></div>
+      <div class="card"><div class="num">WHY THIS STACK</div><h3>Runs offline, one command</h3><p>No cloud keys, ideal for a demo, and every layer is easy to inspect.</p></div>
+    </div>
+    <div style="margin-top:18px;">
+      <span class="chip plain">React</span><span class="chip plain">TypeScript</span><span class="chip plain">Vite</span><span class="chip plain">Express</span><span class="chip plain">node:sqlite</span><span class="chip plain">scrypt auth</span><span class="chip plain">sendBeacon</span><span class="chip plain">git</span>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Architecture</span></div>
+  </section>
+
+  <!-- 5 · LOGIN -->
+  <section class="slide">
+    <div class="split wide-right fill">
+      <div>
+        <div class="eyebrow">Walkthrough · 1</div><div class="rule"></div>
+        <h2>Learners log in</h2>
+        <p style="margin-top:12px;">A clean sign-in with demo accounts. The <b>login event is recorded server-side</b> with the session, IP, and user agent — the first row in the clickstream.</p>
+        <div class="codebox" style="margin-top:16px;">alex / learn123 <span class="c">· learner</span><br>priya / learn123 <span class="c">· learner</span><br>instructor / teach123</div>
+      </div>
+      <div class="shotwrap"><img class="shot" src="assets/login.png" alt="Login screen" /></div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Screen · Login</span></div>
+  </section>
+
+  <!-- 6 · CONTENT -->
+  <section class="slide">
+    <div class="split wide-right fill">
+      <div>
+        <div class="eyebrow">Walkthrough · 2</div><div class="rule"></div>
+        <h2>Interactive content</h2>
+        <p style="margin-top:12px;">One course with <b>four activity types</b> — reading, video, an external link, and a graded quiz. Opening any of them logs a <span class="mono">Course module viewed</span> event.</p>
+        <div style="margin-top:12px;">
+          <span class="chip">Text</span><span class="chip">Video</span><span class="chip">URL</span><span class="chip">Quiz</span>
+        </div>
+      </div>
+      <div class="shotwrap"><div class="browser"><div class="bar"><i></i><i></i><i></i><span class="u">localhost:4000</span></div><img src="assets/course.png" alt="Course home" /></div></div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Screen · Course home</span></div>
+  </section>
+
+  <!-- 7 · VIDEO -->
+  <section class="slide">
+    <div class="split fill">
+      <div>
+        <div class="eyebrow">Walkthrough · 3</div><div class="rule"></div>
+        <h2>Video actions, tracked live</h2>
+        <p style="margin-top:12px;">The HTML5 player emits an event for every interaction — and a <b>live feed</b> shows them landing in real time.</p>
+        <ul style="margin-top:8px;">
+          <li>play · pause · <b>seek</b> · rate change</li>
+          <li>progress milestones (25 / 50 / 75%)</li>
+          <li>completion · fullscreen</li>
+        </ul>
+      </div>
+      <div class="shotwrap"><img class="shot" src="assets/video.png" alt="Video lesson with live event feed" /></div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Screen · Video lesson</span></div>
+  </section>
+
+  <!-- 8 · QUIZ -->
+  <section class="slide">
+    <div class="split fill">
+      <div>
+        <div class="eyebrow">Walkthrough · 4</div><div class="rule"></div>
+        <h2>The full quiz lifecycle</h2>
+        <p style="margin-top:12px;">Every stage is a distinct event, so we can reconstruct exactly how a learner worked through the quiz.</p>
+        <ul style="margin-top:8px;">
+          <li><span class="mono">Quiz attempt started</span></li>
+          <li><span class="mono">Quiz answer changed</span> — per selection</li>
+          <li><span class="mono">Quiz attempt submitted</span> → <span class="mono">User graded</span></li>
+        </ul>
+        <p style="font-size:16px;">Grading is <b>server-side</b> — answers are never exposed to the client.</p>
+      </div>
+      <div class="shotwrap"><img class="shot" src="assets/quiz.png" alt="Quiz" /></div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Screen · Quiz</span></div>
+  </section>
+
+  <!-- 9 · HOW TRACKING WORKS -->
+  <section class="slide">
+    <div class="eyebrow">The core idea</div><div class="rule"></div>
+    <h2>How the clickstream is captured</h2>
+    <div class="flow fill" style="align-items:stretch;max-height:250px;margin-top:14px;">
+      <div class="step"><div class="n">CLIENT</div><h3>Capture</h3><p>Delegated click listener, route-change page views, and video/quiz hooks queue events.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">CLIENT</div><h3>Buffer &amp; flush</h3><p>Batched every 5s, on route change, and on unload via <span class="mono">sendBeacon</span>.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">SERVER</div><h3>Enrich</h3><p>Stamps time, user, IP, and a Moodle-style sentence.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">DATABASE</div><h3>Store</h3><p>One row per event in the SQLite <span class="mono">events</span> table.</p></div>
+    </div>
+    <div class="callout" style="margin-top:26px;">
+      <p><b class="navy">Why sendBeacon?</b> In a single-page app, navigating away would normally drop buffered events. <span class="mono">navigator.sendBeacon</span> guarantees the final batch is delivered even as the page unloads.</p>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Clickstream architecture</span></div>
+  </section>
+
+  <!-- 10 · DASHBOARD -->
+  <section class="slide">
+    <div class="split fill">
+      <div>
+        <div class="eyebrow">Walkthrough · 5</div><div class="rule"></div>
+        <h2>Analytics dashboard</h2>
+        <p style="margin-top:12px;">The stored clickstream, made legible — the data a learning-analytics course actually studies.</p>
+        <ul style="margin-top:8px;">
+          <li>Events by type and by component</li>
+          <li>Activity per learner</li>
+          <li>Quiz performance and a live feed</li>
+        </ul>
+      </div>
+      <div class="shotwrap"><img class="shot" src="assets/analytics_top.png" alt="Analytics dashboard" /></div>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Screen · Analytics</span></div>
+  </section>
+
+  <!-- 11 · CSV EXPORT -->
+  <section class="slide">
+    <div class="eyebrow">The payoff</div><div class="rule"></div>
+    <h2>Exports in exact Moodle format</h2>
+    <p class="lead" style="margin-top:6px;">One click downloads the whole clickstream as a CSV whose columns match the instructor's Moodle sample <b>exactly</b> — the same shape real learning platforms produce.</p>
+    <div class="card fill" style="margin-top:18px;overflow:auto;">
+      <table class="csv">
+        <colgroup><col class="c-time"><col class="c-ctx"><col class="c-comp"><col class="c-name"><col class="c-desc"><col class="c-org"><col class="c-ip"></colgroup>
+        <tr><th>Time</th><th>Event context</th><th>Component</th><th>Event name</th><th>Description</th><th>Origin</th><th>IP address</th></tr>
+        <tr><td>28/07/26, 14:31:04</td><td>Course: ET617 Educational App Design</td><td>System</td><td>User logged in</td><td>The user with id '1' logged in.</td><td>web</td><td>10.0.0.1</td></tr>
+        <tr><td>28/07/26, 14:35:19</td><td>Video: Intro Video</td><td>Media</td><td>Video played</td><td>…played the video 'Intro' at 00:00.</td><td>web</td><td>10.0.0.1</td></tr>
+        <tr><td>28/07/26, 14:38:02</td><td>Quiz: Pre-Test Quiz</td><td>Quiz</td><td>Quiz attempt submitted</td><td>…submitted the attempt scoring 6/10.</td><td>web</td><td>10.0.0.1</td></tr>
+      </table>
+    </div>
+    <div class="foot"><span>LearnTrace</span><span>Moodle-format CSV export</span></div>
+  </section>
+
+  <!-- 12 · BY THE NUMBERS -->
+  <section class="slide">
+    <div class="eyebrow">By the numbers</div><div class="rule"></div>
+    <h2>One demo session captured</h2>
+    <div class="grid cols-4 fill" style="align-content:center;">
+      <div class="stat"><div class="v">45</div><div class="l">clickstream events</div></div>
+      <div class="stat"><div class="v">17</div><div class="l">distinct event types</div></div>
+      <div class="stat"><div class="v">4</div><div class="l">components tracked</div></div>
+      <div class="stat"><div class="v">7</div><div class="l">Moodle CSV columns</div></div>
+    </div>
+    <p style="margin-top:10px;">Components tracked: <span class="chip">System</span><span class="chip">Media</span><span class="chip">Quiz</span><span class="chip">URL</span></p>
+    <div class="foot"><span>LearnTrace</span><span>Results</span></div>
+  </section>
+
+  <!-- 13 · CLOSING -->
+  <section class="slide center">
+    <div class="brandbar" style="margin-bottom:22px;"><div class="logo sm">◆</div><div class="brandname" style="font-size:19px;">LearnTrace</div></div>
+    <div class="eyebrow">Deliverables</div><div class="rule"></div>
+    <h1 style="font-size:42px;margin-bottom:22px;">Built, documented, shipped</h1>
+    <div class="grid cols-2" style="max-width:1000px;">
+      <div class="card checkrow"><div class="bx">✓</div><p style="margin:0;">Working web app — login, content, tracking, dashboard</p></div>
+      <div class="card checkrow"><div class="bx">✓</div><p style="margin:0;">GitHub repository with README</p></div>
+      <div class="card checkrow"><div class="bx">✓</div><p style="margin:0;">Clickstream stored and CSV export</p></div>
+      <div class="card checkrow todo"><div class="bx">▶</div><p style="margin:0;">Demo video and this presentation</p></div>
+    </div>
+    <p class="mono" style="margin-top:28px;font-size:15px;color:var(--faint);">github.com/Sanidhya-Katiyar/Basic-App-Design-Assignment---ET617</p>
+    <h3 style="margin-top:14px;color:var(--navy);">Thank you</h3>
+    <div class="foot"><span>Sanidhya Katiyar · 23B2244</span><span>ET617 · Educational App Design</span></div>
+  </section>
+
+</div>
+</div>
+
+<div id="hint">← → / Space · F fullscreen · P print</div>
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const deck=document.getElementById('deck');
+  const bar=document.getElementById('bar');
+  let i=0;
+  function fit(){ const s=Math.min(innerWidth/1280, innerHeight/720); deck.style.transform='scale('+s+')'; }
+  function show(n){ i=Math.max(0,Math.min(slides.length-1,n)); slides.forEach((s,x)=>s.classList.toggle('active',x===i)); bar.style.width=((i+1)/slides.length*100)+'%'; if(('#'+(i+1))!==location.hash) location.hash=i+1; }
+  function next(){ show(i+1); } function prev(){ show(i-1); }
+  addEventListener('resize',fit);
+  addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ show(0); } else if(e.key==='End'){ show(slides.length-1); }
+    else if(e.key.toLowerCase()==='f'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    else if(e.key.toLowerCase()==='p'){ window.print(); }
+  });
+  addEventListener('click',e=>{ if(e.clientX < innerWidth*0.28) prev(); else next(); });
+  addEventListener('hashchange',()=>{ const n=parseInt(location.hash.slice(1)); if(n && n-1!==i) show(n-1); });
+  fit();
+  const start=parseInt(location.hash.slice(1)); show(start? start-1 : 0);
+</script>
+</body>
+</html>
